@@ -1,3 +1,5 @@
+import json
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -33,7 +35,8 @@ class LinkedinSearch(object):
                   'locality': demographics.find("span", "locality").text,
                   'industry': demographics.find_all("dd", "descriptor")[1].text
                   if len(demographics.find_all("dd", "descriptor")) > 1 else None,
-                  'member_connections': profile_overview_content.find("div", "member-connections").strong.text}
+                  'member_connections': profile_overview_content.find("div", "member-connections").strong.text
+                  if profile_overview_content.find("div", "member-connections") else None}
 
         if "no-picture" not in profile_card["class"]:
             person['picture_url'] = profile_card.find("div", "profile-picture").a.img['data-delayed-url']
@@ -46,14 +49,7 @@ class LinkedinSearch(object):
         # SECTION: experience
         experience_section = soup.find(id="experience")
         if experience_section:
-            person['positions'] = [{'position': position.find("h4", "item-title").a.text,
-                                    'organization': position.find("h5", "item-subtitle").a.text
-                                    if position.find("h5", "item-subtitle").a else None,
-                                    'data-range': position.find("span", "date-range").text
-                                    if position.find("span", "date-range") else None,
-                                    "description": position.find("p", "description").text
-                                    if position.find("p", "description") else None
-                                    } for position in experience_section.find_all("li", "position")]
+            person['positions'] = self.parse_section(experience_section, "position", "organization", "currentPositions")
 
         # SECTION: certifications
         # skip
@@ -73,6 +69,11 @@ class LinkedinSearch(object):
         # SECTION: projects
         # skip
 
+        # SECTION: organizations
+        organizations_section = soup.find(id="organizations")
+        if organizations_section:
+            person["organizations"] = self.parse_section(organizations_section, "organization_name", "role", None)
+
         # SECTION: skills
         skills_section = soup.find(id="skills")
         if skills_section:
@@ -82,23 +83,28 @@ class LinkedinSearch(object):
         # SECTION: education
         education_section = soup.find(id="education")
         if education_section:
-            person['educations'] = [{"university": education.find("h4", "item-title").text,
-                                     "degree": education.find("h5", "item-subtitle").text,
-                                     "data-range": education.find("span", "date-range").text
-                                     if education.find("span", "date-range") else None,
-                                     "description": education.find("div", "description").p.text
-                                     if education.find("div", "description") else None
-                                     } for education in education_section.find_all("li", "school")]
+            person['educations'] = self.parse_section(education_section, "university", "degree", None)
         return person
+
+    @staticmethod
+    def parse_section(section, title_name, subtitle_name, is_current_condition):
+        return [{title_name: item.find("h4", "item-title").text,
+                 subtitle_name: item.find("h5", "item-subtitle").text,
+                 "date_range": item.find("span", "date-range").text
+                 if item.find("span", "date-range") else None,
+                 "description": item.find("div", "description").p.text
+                 if item.find("div", "description") else None,
+                 "is_current": item["data-section"] == is_current_condition
+                 if is_current_condition else None
+                 } for item in section.find_all("li")]
 
 
 def main():
-    first_name, last_name = "Sergey Petrov".split()
+    first_name, last_name = "Pavel Chebotarev".split()
 
     linkedin_search = LinkedinSearch()
     persons = linkedin_search.get_persons_by_name(first_name, last_name)
-    for person in persons:
-        print(person)
+    print(json.dumps(persons, sort_keys=True, indent=2))
 
 
 if __name__ == '__main__':
