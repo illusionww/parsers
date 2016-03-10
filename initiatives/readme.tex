@@ -1,0 +1,39 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[a4paper, left = 10mm, right = 10mm, top = 10mm, bottom = 17mm, bindingoffset = 0cm, columnsep = 1cm]{geometry}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{pscyr}
+\usepackage{indentfirst}
+\usepackage[pdftex,colorlinks,unicode,bookmarks]{hyperref}
+
+\sloppy
+
+\begin{document}
+
+Опишу здесь разное, что касается 
+
+\section*{Российская общественная инициатива \url{https://www.roi.ru/}}
+Описание, что какая колонка обозначает (ну мало ли): 
+\url{https://static.roi.ru/content/doc/roi-api-v1.0.pdf}
+
+В том списке они забыли поле ``decision'', поле с текстом о предлагаемом решении.
+Я забираю все поля, кроме внутренних id разных статусов, documents и authorship.
+В остальном я тут был супераккуратен.
+
+Этот сайт имеет очень статичное api. Здесь принудительная разбивка по статусам, и нет никакой возможности фильтровать по дате.
+
+Самые сырые данные находятся в файлах:
+\begin{itemize}
+	\item all\_poll.csv, all\_poll.xlsx,
+	\item all\_advisement.csv, all\_advisement.xls,
+	\item all\_complete.csv, all\_complete.xlsx,
+	\item all\_archive.csv, all\_archive.xlsx.
+\end{itemize}
+Совокупно они содержат вообще все записи РОИ.
+
+Дальше я смержил их в один, отсортировал по date.poll.begin и отфильтровал по [1.02.2015:29.02.2016]
+
+\end{document}
