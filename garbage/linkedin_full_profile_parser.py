@@ -1,21 +1,9 @@
-import json
-
 import requests
 from bs4 import BeautifulSoup
 
 
-class LinkedinSearch(object):
-    def __init__(self):
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'
-        }
-
-    def get_persons_by_name(self, first_name, last_name):
-        url = 'http://www.linkedin.com/pub/dir/' + first_name + '/' + last_name + '/'
-        page = requests.get(url, headers=self.headers).text
-        soup = BeautifulSoup(page, "html.parser")
-        return [self.get_person_info_by_link(profile.find("div", "content").h3.a['href'])
-                for profile in soup.find_all('div', 'profile-card')]
+class LinkedinNoAuthProfileParser(object):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1'}
 
     def get_person_info_by_link(self, url):
         print("processing", url)  # for debugging purposes
@@ -32,7 +20,7 @@ class LinkedinSearch(object):
                   'name': profile_overview_content.find(id="name").text,
                   'headline': profile_overview_content.find("p", "headline").text
                   if profile_overview_content.find("p", "headline") else None,
-                  'locality': demographics.find("span", "locality").text,
+                  'location': demographics.find("span", "locality").text,
                   'industry': demographics.find_all("dd", "descriptor")[1].text
                   if len(demographics.find_all("dd", "descriptor")) > 1 else None,
                   'member_connections': profile_overview_content.find("div", "member-connections").strong.text
@@ -100,12 +88,10 @@ class LinkedinSearch(object):
 
 
 def main():
-    first_name, last_name = "Pavel Chebotarev".split()
-
-    linkedin_search = LinkedinSearch()
-    persons = linkedin_search.get_persons_by_name(first_name, last_name)
-    print(json.dumps(persons, sort_keys=True, indent=2))
+    parser = LinkedinNoAuthProfileParser()
+    person = parser.get_person_info_by_link("https://www.linkedin.com/in/ivashkin")
+    print(person)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
