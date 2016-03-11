@@ -16,7 +16,7 @@ def getInitiative(id):
 
 
 def normalizeText(text):
-    return html.unescape(text).replace("<br />", "").replace("\r\n", "\\n")
+    return html.unescape(text).replace("<br />", "").replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n")
 
 def normalizeDate(date):
     return datetime.fromtimestamp(int(date))
@@ -34,7 +34,7 @@ def write(name, initiatives):
             "decision",
             "prospective",
             "level.title",
-            "category.title"
+            "category.title",
             "status.title",
             "result.title",
             "date.poll.begin",
@@ -52,10 +52,10 @@ def write(name, initiatives):
                 initiative["url"],
                 normalizeText(initiative["title"]),
                 normalizeText(initiative["description"]),
-                "\n".join([normalizeText(decision["text"]) for decision in initiative["decision"]]) if "decision" in initiative else "",
+                "\\n".join([normalizeText(decision["text"]) for decision in initiative["decision"]]) if "decision" in initiative else "",
                 normalizeText(initiative["prospective"]),
                 initiative["level"]["title"],
-                "\n".join([category["title"] for category in initiative["category"]]) if "category" in initiative else "",
+                "\\n".join([category["title"] for category in initiative["category"]]) if "category" in initiative else "",
                 initiative["status"]["title"],
                 initiative["result"]["title"] if "result" in initiative else "",
                 normalizeDate(initiative["date"]["poll"]["begin"]),
@@ -76,3 +76,5 @@ run("poll")
 run("advisement")
 run("complete")
 run("archive")
+
+# write("1", [getInitiative(str(14332)), getInitiative(str(24800))])
